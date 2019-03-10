@@ -136,4 +136,4 @@ TEST:
   RPN_MIN_SIZE: 0
   # RCNN nms
   NMS: 0.3
-  test_epoch: 2
+  test_epoch: 4

@@ -235,6 +235,7 @@ class Module(BaseModule):
 
     def init_params(self, initializer=Uniform(0.01), arg_params=None, aux_params=None,
                     allow_missing=False, force_init=False):
+                    #allow_missing=False, force_init=False, allow_extra=True):
         """Initialize the parameters and auxiliary states.
 
         Parameters
@@ -574,7 +575,8 @@ class Module(BaseModule):
         if self._update_on_kvstore:
             _update_params_on_kvstore(self._exec_group.param_arrays,
                                       self._exec_group.grad_arrays,
-                                      self._kvstore)
+                                      self._kvstore,
+                                      self._param_names)
         else:
             _update_params(self._exec_group.param_arrays,
                            self._exec_group.grad_arrays,
@@ -783,7 +785,7 @@ class MutableModule(BaseModule):
         return self._curr_module.get_params()
 
     def init_params(self, initializer=Uniform(0.01), arg_params=None, aux_params=None,
-                    allow_missing=False, force_init=False):
+                    allow_missing=False, force_init=False, allow_extra=True):
         if self.params_initialized and not force_init:
             return
         assert self.binded, 'call bind before initializing the parameters'
@@ -965,9 +967,11 @@ class MutableModule(BaseModule):
         # training loop
         ################################################################################
         for epoch in range(begin_epoch, num_epoch):
+            print 'begin epoch: ', begin_epoch, 'end epoch: ', num_epoch
             tic = time.time()
             eval_metric.reset()
             for nbatch, data_batch in enumerate(train_data):
+                #print nbatch, nbatch / 10000, len(train_data)
                 if monitor is not None:
                     monitor.tic()
                 self.forward_backward(data_batch)
@@ -983,7 +987,17 @@ class MutableModule(BaseModule):
                                                      locals=locals())
                     for callback in _as_list(batch_end_callback):
                         callback(batch_end_params)
+                # add by kaijun.zhang
+                step_batch = 20000
+                if nbatch % step_batch == 0:
+                    # sync aux params across devices
+                    arg_params, aux_params = self.get_params()
+                    self.set_params(arg_params, aux_params)
 
+                    if epoch_end_callback is not None:
+                        for callback in _as_list(epoch_end_callback):
+                            callback(nbatch / step_batch, self.symbol, arg_params, aux_params)
+                            
             # one epoch of training is finished
             for name, val in eval_metric.get_name_value():
                 self.logger.info('Epoch[%d] Train-%s=%f', epoch, name, val)

@@ -1,7 +1,25 @@
 # Flow-Guided Feature Aggregation for Video Object Detection
 
-
 This repository is implemented by [Yuqing Zhu](https://github.com/jeremy43), [Shuhao Fu](https://github.com/howardmumu), and [Xizhou Zhu](https://github.com/einsiedler0408), when they are interns at MSRA.
+
+## 更新mxnet
+github中提到mxnet版本太低了，自己编译太麻烦并且没有必要。自己编译mxnet，主要是作者自己写了position-sensitivity ROI pooling算子，当前mxnet已经支持该算子，没有必要再自己编译。
+使用最新的mxnet(v1.3.0)报如下错误：[Lack a parameter in _update_params_on_kvstore() ](https://github.com/msracver/Deep-Feature-Flow/issues/29)，解决方法如下：
+This problem could be solved after adding one input parameter for the _update_params_on_kvstore function in rfcn/core/module.py
+``` python
+_update_params_on_kvstore(self._exec_group.param_arrays,
+self._exec_group.grad_arrays,
+self._kvstore,
+self._param_names)
+```
+### 错误2：
+File "/usr/local/lib/python2.7/dist-packages/mxnet-0.12.0-py2.7.egg/mxnet/module/base_module.py", line 652, in set_params
+allow_extra=allow_extra)
+TypeError: init_params() got an unexpected keyword argument 'allow_extra'
+方法1：
+直接移除base_module.py中allow_extra=allow_extra。
+方法2：
+The optional parameter 'allow_extra=allow_extra' is recently introduced to mxnet. This FCIS implementation is based on an older version of mxnet. I think you could simply add 'allow_extra=True' to the 'init_params' function in MutableModule and other related code. I add 'allow_extra=True to almost everywhere. :) It works for me.
 
 ## Introduction
 

@@ -91,3 +91,10 @@ output
 model
 
 .db
+
+*.pkl
+*.png
+*.params
+*.jpeg
+*.jpg
+
