@@ -987,16 +987,6 @@ class MutableModule(BaseModule):
                                                      locals=locals())
                     for callback in _as_list(batch_end_callback):
                         callback(batch_end_params)
-                # add by kaijun.zhang
-                step_batch = 20000
-                if nbatch % step_batch == 0:
-                    # sync aux params across devices
-                    arg_params, aux_params = self.get_params()
-                    self.set_params(arg_params, aux_params)
-
-                    if epoch_end_callback is not None:
-                        for callback in _as_list(epoch_end_callback):
-                            callback(nbatch / step_batch, self.symbol, arg_params, aux_params)
                             
             # one epoch of training is finished
             for name, val in eval_metric.get_name_value():

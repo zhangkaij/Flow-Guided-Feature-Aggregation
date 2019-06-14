@@ -88,7 +88,9 @@ lib/nms/*.cpp
 
 external
 output
+output_2
 model
+data/ILSVRC2015
 
 .db
 

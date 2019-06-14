@@ -1,3 +1,3 @@
-source activate mxnet_py27
+source activate zhangkj_py27
 python experiments/fgfa_rfcn/fgfa_rfcn_end2end_train_test.py  --cfg experiments/fgfa_rfcn/cfgs/resnet_v1_101_flownet_imagenet_vid_rfcn_end2end_ohem.yaml
 
